@@ -18,8 +18,10 @@ public class Navigator : MonoBehaviour
     [SerializeField] Transform[] patrolPoints;
     [SerializeField] Transform target;
 
-    [SerializeField] HealthSO heatlh;
+    [SerializeField] HealthSO health;
     [SerializeField] UnityEvent GameOver;
+
+    PlayerMovement player;
 
     Transform currentPatrolPoint;
     enemyStates states;
@@ -31,10 +33,13 @@ public class Navigator : MonoBehaviour
 
     Sensor hearing;
 
+    [SerializeField] LayerMask environmentLayer;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        hearing = GetComponent<Sensor>();  
+        hearing = FindAnyObjectByType<Sensor>();  
+        player = GetComponent<PlayerMovement>();    
         currentPatrolPoint = patrolPoints[0];
         agent.SetDestination(currentPatrolPoint.position);  
     }
@@ -43,10 +48,10 @@ public class Navigator : MonoBehaviour
     void Update()
     {
 
-        Patrol();
+        //Patrol();
 
 
-        /*switch (states)
+        switch (states)
         {
             case enemyStates.PATROL:
                 Patrol();
@@ -57,14 +62,14 @@ public class Navigator : MonoBehaviour
             case enemyStates.PURSUE:
                 Pursue();
                 break;
-        }*/
+        }
     }
 
-    public void HeardSomething(bool playerIsMakingSound)
+    public void HeardSomething(bool playerIsMakingSound, bool isMoving)
     {
-        if (playerIsMakingSound)
+        if (playerIsMakingSound && isMoving)
         {
-            Debug.Log("I heard something...");
+            Debug.Log("Actively litsening now");
             states = enemyStates.INVESTIGATE;
         }
         else
@@ -83,9 +88,9 @@ public class Navigator : MonoBehaviour
         if(dot > visionRadius)
         {
             RaycastHit hit;
-            if(Physics.Raycast(transform.position, lineToTarget, out hit))
+            if(Physics.Raycast(transform.position, lineToTarget, out hit, 1000, environmentLayer))
             {
-                //if(hit.)
+                Debug.Log("Seeing a wall");
             }
             else
             {
@@ -114,7 +119,7 @@ public class Navigator : MonoBehaviour
 
     void Patrol()
     {
-
+        Debug.Log("PATROL STATE");
         float distance = Vector3.Distance(transform.position, currentPatrolPoint.position);
       
         if (distance < 1)
@@ -135,21 +140,23 @@ public class Navigator : MonoBehaviour
 
     void Investigate()
     {
+        Debug.Log("INVESTIGATE STATE");
+
         if (hearing.playerInSensor)
         {
-            agent.isStopped = true;
-            Vector3 direction = (target.position - transform.position).normalized;
-            direction.y = 0;
-            Quaternion rotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, rotation, 1 * Time.deltaTime);
+            transform.rotation = target.rotation;
+            // tranform.forward = (target.position - transform.position).normalized
+            Debug.Log("Rotating...");
         }
         else
         {
-            timeElapsed = Time.deltaTime;
+            timeElapsed += Time.deltaTime;
 
             if (timeElapsed > 5)
             {
+                Debug.Log("going to patrol state");
                 states = enemyStates.PATROL;
+                timeElapsed = 0;
             }
         }
 
@@ -163,6 +170,7 @@ public class Navigator : MonoBehaviour
 
         if (distance > 0.1f)
         {
+            health.currentHealth = 0;
             GameOver.Invoke();
         }
     }

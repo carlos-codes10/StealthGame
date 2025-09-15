@@ -8,10 +8,12 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float Speed = 8;
     float sneakSpeed;
     [SerializeField] float jumpForce = 1;
+    
     bool sneakInput = false;
 
     // need this for unity event
     public bool isMakingSound;
+    public bool isMoving = false;
 
     // refrences 
     [SerializeField] Animator myAnimator;
@@ -21,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+
        rb = GetComponent<Rigidbody>();
        health.RestoreHealth();
         sneakSpeed = Speed * 0.90f;
@@ -49,9 +52,15 @@ public class PlayerMovement : MonoBehaviour
         movementVector = new Vector3(inputVector.x, 0, inputVector.y);
         myAnimator.transform.forward = movementVector.normalized;
 
-
-        
+        if (movementVector.magnitude > 0)
+            isMoving = true;
+        else
+        {
+            isMoving = false;
+        }
+            
     }
+
     bool OnSneak(InputValue v)
     {
         return sneakInput = v.isPressed;
