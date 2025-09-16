@@ -4,7 +4,7 @@ using UnityEngine.Events;
 public class Sensor : MonoBehaviour
 {
 
-    [SerializeField] UnityEvent<bool, bool> onHeard;
+    [SerializeField] UnityEvent<bool, bool, bool> onHeard;
     PlayerMovement player;
 
     public bool playerInSensor = false;
@@ -34,6 +34,6 @@ public class Sensor : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        onHeard.Invoke(player.isMakingSound, player.isMoving);
+        onHeard.Invoke(player.isMakingSound, player.isMoving, playerInSensor);
     }
 }

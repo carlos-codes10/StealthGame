@@ -20,7 +20,7 @@
                     "id": "9e1d422a-f9db-4e54-b646-6544c60bbf7b",
                     "expectedControlType": "",
                     "processors": "",
-                    "interactions": "",
+                    "interactions": "Press(behavior=2)",
                     "initialStateCheck": false
                 }
             ],
@@ -84,7 +84,7 @@
                     "name": "",
                     "id": "1952e921-f5d0-4431-bdb3-47686723bb42",
                     "path": "<Keyboard>/shift",
-                    "interactions": "Press(behavior=2)",
+                    "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Sneak",

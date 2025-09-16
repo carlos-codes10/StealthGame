@@ -35,8 +35,15 @@ public class PlayerMovement : MonoBehaviour
     {
         myAnimator.SetFloat("walkSpeed", movementVector.magnitude);
         myAnimator.SetFloat("ground", myAnimator.transform.position.y); 
-        isMakingSound = !sneakInput;
 
+        if (sneakInput || movementVector.magnitude == 0)
+        {
+            isMakingSound = false;
+        }
+        else if (!sneakInput && movementVector.magnitude > 0)
+        {
+            isMakingSound= true;
+        }
     }
     private void FixedUpdate()
     {
@@ -53,10 +60,14 @@ public class PlayerMovement : MonoBehaviour
         myAnimator.transform.forward = movementVector.normalized;
 
         if (movementVector.magnitude > 0)
+        {
             isMoving = true;
+            isMakingSound = true;
+        }
         else
         {
             isMoving = false;
+            isMakingSound = false;
         }
             
     }

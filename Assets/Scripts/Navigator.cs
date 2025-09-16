@@ -39,7 +39,7 @@ public class Navigator : MonoBehaviour
     void Start()
     {
         hearing = FindAnyObjectByType<Sensor>();  
-        player = GetComponent<PlayerMovement>();    
+        player = FindAnyObjectByType<PlayerMovement>();    
         currentPatrolPoint = patrolPoints[0];
         agent.SetDestination(currentPatrolPoint.position);  
     }
@@ -65,9 +65,9 @@ public class Navigator : MonoBehaviour
         }
     }
 
-    public void HeardSomething(bool playerIsMakingSound, bool isMoving)
+    public void HeardSomething(bool playerIsMakingSound, bool isMoving, bool onSensor)
     {
-        if (playerIsMakingSound && isMoving)
+        if (playerIsMakingSound && isMoving && onSensor)
         {
             Debug.Log("Actively litsening now");
             states = enemyStates.INVESTIGATE;
@@ -142,9 +142,9 @@ public class Navigator : MonoBehaviour
     {
         Debug.Log("INVESTIGATE STATE");
 
-        if (hearing.playerInSensor)
+        if (hearing.playerInSensor && player.isMakingSound)
         {
-            transform.rotation = target.rotation;
+            //transform.rotation = target.rotation;
             // tranform.forward = (target.position - transform.position).normalized
             Debug.Log("Rotating...");
         }
