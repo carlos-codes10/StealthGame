@@ -24,6 +24,7 @@ public class Navigator : MonoBehaviour
     [SerializeField] UnityEvent GameOver;
 
     PlayerMovement player;
+    GameManager gameManager;
 
     Transform currentPatrolPoint;
     enemyStates states;
@@ -45,7 +46,8 @@ public class Navigator : MonoBehaviour
     void Start()
     {
         hearing = FindAnyObjectByType<Sensor>();  
-        player = FindAnyObjectByType<PlayerMovement>();    
+        player = FindAnyObjectByType<PlayerMovement>(); 
+        gameManager = FindAnyObjectByType<GameManager>();
         currentPatrolPoint = patrolPoints[0];
         agent.SetDestination(currentPatrolPoint.position);  
     }
@@ -53,9 +55,6 @@ public class Navigator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        //Patrol();
-
 
         switch (states)
         {
@@ -75,11 +74,11 @@ public class Navigator : MonoBehaviour
     {
         if (playerIsMakingSound && isMoving && onSensor)
         {
-            //Debug.Log("Actively litsening now");
+            Debug.Log("Actively litsening now");
             states = enemyStates.INVESTIGATE;
         }
         else
-            Debug.Log("Player is QUIET or not in HEARING Sensor");
+            Debug.Log("Player not in SENSOR ");
 
     }
 
@@ -93,6 +92,7 @@ public class Navigator : MonoBehaviour
         if (onSensor)
         {
             Debug.Log("Player in SIGHT sensor");
+            gotPosition = 0;
 
             if (dot > visionRadius)
             {
@@ -100,12 +100,15 @@ public class Navigator : MonoBehaviour
                 if (Physics.Raycast(transform.position, lineToTarget, out hit, 75, environmentLayer))
                 {
                     Debug.Log("Seeing a WALL");
+                    playerIsSeen = false;
+                    
                 }
                 else
                 {
                     Debug.Log("Saw the PLAYER");
                     playerIsSeen = true;
                     states = enemyStates.PURSUE;
+                    
                     GetPlayerPosition();
                 }
 
@@ -114,12 +117,10 @@ public class Navigator : MonoBehaviour
             {
                 Debug.Log("Player is not seen");
                 playerIsSeen = false;
-                gotPosition = 0;
             }
         }
         else
         {
-            Debug.Log("Player not in SIGHT sensor");
             playerIsSeen = false;
             gotPosition = 0;
         }
@@ -179,7 +180,7 @@ public class Navigator : MonoBehaviour
 
             if (timeElapsed > 5)
             {
-                //Debug.Log("going to PATROL state");
+                Debug.Log("going to PATROL state");
                 states = enemyStates.PATROL;
                 timeElapsed = 0;
             }
@@ -191,7 +192,7 @@ public class Navigator : MonoBehaviour
 
     void Pursue()
     {
-        Debug.Log("PURSUE STATE");
+        //Debug.Log("PURSUE STATE");
 
         if (playerIsSeen)
         {
@@ -199,11 +200,12 @@ public class Navigator : MonoBehaviour
             agent.SetDestination(target.position);
             Debug.Log("PURSUING THE PLAYER");
 
-            if (distance < 1.5f)
+            if (distance < 1.2f && gameManager.gameOver != true)
             {
                 Debug.Log("ELIMINATED THE PLAYER");
                 health.currentHealth = 0;
                 GameOver.Invoke();
+                gameManager.gameOver = true;
             }
 
         }
@@ -213,7 +215,7 @@ public class Navigator : MonoBehaviour
             float distance2 = Vector3.Distance(transform.position, getPlayerPostion);
             agent.SetDestination(getPlayerPostion);
 
-            if (distance2 < 2f)
+            if (distance2 < 2.5f)
             {
                 states = enemyStates.INVESTIGATE;
             }

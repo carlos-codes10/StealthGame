@@ -30,6 +30,7 @@ public class Sensor : MonoBehaviour
         if (other.GetComponent<PlayerMovement>())
         {
             playerInSensor = false;
+            onSight.Invoke(playerInSensor);
         }
     }
 
