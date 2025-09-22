@@ -33,6 +33,8 @@ public class Navigator : MonoBehaviour
     int PatrolPointIndex = 0;
     float visionRadius = 0.8f;
     float timeElapsed;
+    float playerAttackRange = 1;
+    float time;
 
     Sensor hearing;
     SightSensor sight;
@@ -73,7 +75,7 @@ public class Navigator : MonoBehaviour
     {
         if (playerIsMakingSound && isMoving && onSensor)
         {
-            Debug.Log("Actively litsening now");
+            //Debug.Log("Actively litsening now");
             states = enemyStates.INVESTIGATE;
         }
         else
@@ -95,13 +97,13 @@ public class Navigator : MonoBehaviour
             if (dot > visionRadius)
             {
                 RaycastHit hit;
-                if (Physics.Raycast(transform.position, lineToTarget, out hit, 100, environmentLayer))
+                if (Physics.Raycast(transform.position, lineToTarget, out hit, 75, environmentLayer))
                 {
-                    Debug.Log("Seeing a wall");
+                    Debug.Log("Seeing a WALL");
                 }
                 else
                 {
-                    Debug.Log("Saw the player");
+                    Debug.Log("Saw the PLAYER");
                     playerIsSeen = true;
                     states = enemyStates.PURSUE;
                     GetPlayerPosition();
@@ -136,10 +138,13 @@ public class Navigator : MonoBehaviour
     {
         Debug.Log("PATROL STATE");
         float distance = Vector3.Distance(transform.position, currentPatrolPoint.position);
+
+        time += Time.deltaTime;
       
-        if (distance < 1)
+        if (distance < 2)
         {
             PatrolPointIndex++;
+
 
             if(PatrolPointIndex >= patrolPoints.Length)
             {
@@ -151,6 +156,9 @@ public class Navigator : MonoBehaviour
 
 
         }
+        else
+            agent.SetDestination(currentPatrolPoint.position);
+
     }
 
     void Investigate()
@@ -161,7 +169,9 @@ public class Navigator : MonoBehaviour
         {
             transform.forward = (target.position - transform.position).normalized;
 
-            Debug.Log("Rotating...");
+            Debug.Log("ROTATING TO PLAYER...");
+
+
         }
         else
         {
@@ -169,22 +179,32 @@ public class Navigator : MonoBehaviour
 
             if (timeElapsed > 5)
             {
-                Debug.Log("going to patrol state");
+                //Debug.Log("going to PATROL state");
                 states = enemyStates.PATROL;
                 timeElapsed = 0;
             }
         }
 
+
+
     }
 
     void Pursue()
     {
-        float distance = Vector3.Distance(transform.position, target.position);
         Debug.Log("PURSUE STATE");
+
         if (playerIsSeen)
         {
+            float distance = Vector3.Distance(transform.position, target.position);
             agent.SetDestination(target.position);
             Debug.Log("PURSUING THE PLAYER");
+
+            if (distance < 1.5f)
+            {
+                Debug.Log("ELIMINATED THE PLAYER");
+                health.currentHealth = 0;
+                GameOver.Invoke();
+            }
 
         }
         else
@@ -193,18 +213,10 @@ public class Navigator : MonoBehaviour
             float distance2 = Vector3.Distance(transform.position, getPlayerPostion);
             agent.SetDestination(getPlayerPostion);
 
-            if (distance2 < 0.1f)
+            if (distance2 < 2f)
             {
                 states = enemyStates.INVESTIGATE;
             }
-        }
-
-
-        if (distance < 1)
-        {
-            Debug.Log("ELIMINATED THE PLAYER");
-            health.currentHealth = 0;
-            GameOver.Invoke();
         }
     }
 }
