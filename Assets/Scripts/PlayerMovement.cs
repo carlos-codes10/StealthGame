@@ -54,7 +54,7 @@ public class PlayerMovement : MonoBehaviour
 
     void OnMovement(InputValue v)
     {
-        Debug.Log("OnMovement Called!");
+        //Debug.Log("OnMovement Called!");
         Vector2 inputVector = v.Get<Vector2>();
         movementVector = new Vector3(inputVector.x, 0, inputVector.y);
         myAnimator.transform.forward = movementVector.normalized;

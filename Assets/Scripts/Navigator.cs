@@ -1,7 +1,9 @@
 using JetBrains.Annotations;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Events;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 
 public enum enemyStates
@@ -25,13 +27,15 @@ public class Navigator : MonoBehaviour
 
     Transform currentPatrolPoint;
     enemyStates states;
-    int gotPosition; 
+    int gotPosition;
+     private bool playerIsSeen;
     Vector3 getPlayerPostion;
     int PatrolPointIndex = 0;
-    float visionRadius;
+    float visionRadius = 0.8f;
     float timeElapsed;
 
     Sensor hearing;
+    SightSensor sight;
 
     [SerializeField] LayerMask environmentLayer;
 
@@ -73,49 +77,60 @@ public class Navigator : MonoBehaviour
             states = enemyStates.INVESTIGATE;
         }
         else
-            Debug.Log("Not hearing anything");
+            Debug.Log("Player is QUIET or not in HEARING Sensor");
 
     }
 
-    public void SawSomething()
+    public void SawSomething(bool onSensor)
     {
         Vector3 guardForward = transform.forward;
         guardForward.y = 0;
         guardForward.Normalize();
         Vector3 lineToTarget = (target.position - transform.position).normalized;
         float dot = Vector3.Dot(guardForward, lineToTarget);
-
-        if(dot > visionRadius)
+        if (onSensor)
         {
-            RaycastHit hit;
-            if(Physics.Raycast(transform.position, lineToTarget, out hit, 1000, environmentLayer))
+            Debug.Log("Player in SIGHT sensor");
+
+            if (dot > visionRadius)
             {
-                Debug.Log("Seeing a wall");
+                RaycastHit hit;
+                if (Physics.Raycast(transform.position, lineToTarget, out hit, 100, environmentLayer))
+                {
+                    Debug.Log("Seeing a wall");
+                }
+                else
+                {
+                    Debug.Log("Saw the player");
+                    playerIsSeen = true;
+                    states = enemyStates.PURSUE;
+                    GetPlayerPosition();
+                }
+
             }
             else
             {
-                Debug.Log("Saw the player");
-                states = enemyStates.PURSUE;
-                GetPlayerPosition();
+                Debug.Log("Player is not seen");
+                playerIsSeen = false;
+                gotPosition = 0;
             }
-
         }
         else
         {
-            Debug.Log("Did not see the player");
-            agent.SetDestination(getPlayerPostion); 
-            gotPosition = 0;    
+            Debug.Log("Player not in SIGHT sensor");
+            playerIsSeen = false;
+            gotPosition = 0;
         }
     }
 
-   void GetPlayerPosition()
-   {
+    void GetPlayerPosition()
+    {
       if(gotPosition == 0)
       {
         getPlayerPostion = target.position;
             gotPosition = 1;
       }
-   }
+    }
 
     void Patrol()
     {
@@ -144,8 +159,8 @@ public class Navigator : MonoBehaviour
 
         if (hearing.playerInSensor && player.isMakingSound)
         {
-            //transform.rotation = target.rotation;
-            // tranform.forward = (target.position - transform.position).normalized
+            transform.forward = (target.position - transform.position).normalized;
+
             Debug.Log("Rotating...");
         }
         else
@@ -165,14 +180,31 @@ public class Navigator : MonoBehaviour
     void Pursue()
     {
         float distance = Vector3.Distance(transform.position, target.position);
-
-        agent.SetDestination(target.position);
-
-        if (distance > 0.1f)
+        Debug.Log("PURSUE STATE");
+        if (playerIsSeen)
         {
+            agent.SetDestination(target.position);
+            Debug.Log("PURSUING THE PLAYER");
+
+        }
+        else
+        {
+            Debug.Log("LOST PLAYER GOING BACK");
+            float distance2 = Vector3.Distance(transform.position, getPlayerPostion);
+            agent.SetDestination(getPlayerPostion);
+
+            if (distance2 < 0.1f)
+            {
+                states = enemyStates.INVESTIGATE;
+            }
+        }
+
+
+        if (distance < 1)
+        {
+            Debug.Log("ELIMINATED THE PLAYER");
             health.currentHealth = 0;
             GameOver.Invoke();
         }
     }
-
 }

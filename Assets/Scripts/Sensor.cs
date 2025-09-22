@@ -5,6 +5,7 @@ public class Sensor : MonoBehaviour
 {
 
     [SerializeField] UnityEvent<bool, bool, bool> onHeard;
+    [SerializeField] UnityEvent<bool> onSight;
     PlayerMovement player;
 
     public bool playerInSensor = false;
@@ -35,5 +36,6 @@ public class Sensor : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         onHeard.Invoke(player.isMakingSound, player.isMoving, playerInSensor);
+        onSight.Invoke(playerInSensor);
     }
 }

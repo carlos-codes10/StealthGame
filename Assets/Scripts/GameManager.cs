@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     // refrences
-    [SerializeField] HealthSO health;
+    [SerializeField] GameObject gameOverUI;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -20,15 +20,12 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
-        // stop time show gameover screen
-        // COPY THE NAME BELOW: gameOverUI then uncomment!
-        //gameOverUI.SetActive(true);
+        gameOverUI.SetActive(true);
         Time.timeScale = 0;
     }
 
     public void Restart()
     {
-        Scene scene = SceneManager.GetActiveScene();
         SceneManager.LoadScene("SampleScene");
     }
 
